@@ -26,7 +26,6 @@ response_pool = [
     "Let's see what the mods will let us say in the comment thread",
     "Click here for deeply held beliefs",
     "There is a small chance some will say something funny in the comment thread, and a tiny chance they will say something smart",
-    "Bob is a dick to random people on the internet. Come be like Bob in the comments",
     "This isn't a thread about beer, but you can make it into one",
     "Because what self respecting farker actually reads the articles",
 ]
