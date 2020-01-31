@@ -5,6 +5,8 @@ import re
 import random
 from dotenv import load_dotenv
 import os
+from urllib3.exceptions import ProtocolError
+import time
 
 
 load_dotenv()
@@ -125,6 +127,10 @@ class MyStreamListener(tweepy.StreamListener):
     def on_disconnect(self, notice):
         print(f"Disconnect by {notice}")
 
+    def on_exception(self, exception):
+        print(exception)
+        return
+
     # def keep_alive(self):
     #     print("__________________________")
     #     print("Keep Alive Call Received")
@@ -143,7 +149,7 @@ if __name__ == "__main__":
     # while True:
     #     try:
     #         myStream.filter(follow=[fark_user_id], is_async=True)
-    #     except Exception as e:
+    #     except ProtocolError:
     #         continue
     try:
         myStream.filter(follow=[fark_user_id], is_async=True)
