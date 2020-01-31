@@ -43,7 +43,7 @@ def create_payload(search_term: str) ->dict:
 
 
 
-def get_relevant(soup: BeautifulSoup) -> int:
+def get_relevancy_score(soup: BeautifulSoup) -> int:
     """
     Searches the Fark soup and return the relevancy score of the first result
     :param soup: Fark website converted to BS4 soup
@@ -115,18 +115,27 @@ def authorize_tweepy(consumer_key, consumer_secret, access_token, access_secret)
     return api
 
 
-def tweet_text(tweet):
+def tweet_text(status, text):
+    """
+    Take a tweet object, and the already established text of the tweet and returns
+    None or the cleaned text
+    :param status: Twitter status object
+    :param text: Previously established text of the tweet
+    :return: None or Cleaned text suitable for passing to the Fark search page
+    """
     if (
-        tweet.in_reply_to_status_id
-        or tweet.full_text.startswith("RT @")
-        or tweet.quoted_status
+            status.in_reply_to_status_id
+            or text.startswith("RT @")
+            or hasattr(status, "quoted_status")
     ):
+        print(text)
+        print("Probably a reply or a retweet")
+        print("______________________________")
         return None
-    text = tweet.full_text
     # Strip out http references at the end of the tweet
     # Unfortunately this will remove all http links - this can be worked on
     text = re.sub(r"http\S+", "", text).rstrip()
-    return (text, tweet.id)
+    return text
 
 
 class MyStreamListener(tweepy.StreamListener):
@@ -139,27 +148,22 @@ class MyStreamListener(tweepy.StreamListener):
             text = status.text
         # Step 2: Identify if it is a relevant tweet
         # If relevant, strip out the http link and return the search string and tweet id
-        if (
-            status.in_reply_to_status_id
-            or text.startswith("RT @")
-            or hasattr(status, "quoted_status")
-        ):
-            print(text)
-            print("Probably a reply or a retweet")
-            print("______________________________")
-            return None
-        text = re.sub(r"http\S+", "", text).rstrip()
-        # Step 3: Post the response
+        text = tweet_text(status, text)
+        #TODO Identify if tweet is a News Flash and process that in a slightly different way
         print(text, tweet_id)
-        fark_url = get_fark_response(text)
-        if not fark_url:
-            return None
-        fark_url, tweet_response = fark_url
-        fark_url = f"@fark {tweet_response} {fark_url}"
-        print(fark_url)
-        api.update_status(status=fark_url, in_reply_to_status_id=tweet_id)
-        print("Response posted")
         print("____________________________")
+        # Step 3: Post the response
+        fark_soup = make_fark_soup(text)
+        if fark_soup:
+            fark_url = get_fark_comment_link(fark_soup)
+            relevancy_score = get_relevancy_score(fark_soup)
+            if fark_url and relevancy_score > 75:
+                fark_response = create_tweet_reply(fark_soup)
+                fark_response = f"@fark {fark_response} {fark_url}"
+                print(fark_response)
+                api.update_status(status=fark_response, in_reply_to_status_id=tweet_id)
+                print("Response posted")
+                print("____________________________")
 
     def on_disconnect(self, notice):
         print(f"Disconnect by {notice}")
