@@ -33,24 +33,61 @@ response_pool = [
 ]
 
 
-def create_payload(search_term):
+def create_payload(search_term: str) ->dict:
+    """
+    Creates a payload item for use in a reauest object
+    :param search_term: A string generated from a twitter status
+    :return: A dictionary formatted for the Fark search tool
+    """
     return {"qq": search_term, "o": 0}
 
 
-def get_relevant(soup):
+
+def get_relevant(soup: BeautifulSoup) -> int:
+    """
+    Searches the Fark soup and return the relevancy score of the first result
+    :param soup: Fark website converted to BS4 soup
+    :return: A relevancy score
+    """
     revelancy = soup.find("span", attrs={"style": {"font-size:smaller"}})
     # returns "(score xxx%)"
     # so slice the string to just get the % then convert to int
     return int(revelancy.text[7:-2])
 
 
-def create_tweet_reply(fark_tag):
-    if fark_tag == "Florida":
+def create_tweet_reply(soup: BeautifulSoup) -> str:
+    fark_tag = [a["title"] for a in soup.select(".headlineTopic a")]
+    if fark_tag[0] == "Florida":
         return "Florida Man thread"
-    elif fark_tag == "NewsFlash":
-        return "NewsFlash thread. Please be responsible"
     else:
         return random.choice(response_pool)
+
+
+def make_fark_soup(search_term: str) -> BeautifulSoup:
+    """
+
+    :param search_term: The string you want to search in the Fark search engine
+    :return: BeautifulSoup object of the page returned by the Fark search engine
+    """
+    if not search_term:
+        return None
+    r = requests.get(search_url, create_payload(search_term))
+    soup = BeautifulSoup(r.text, features="html.parser")
+    return soup
+
+def get_fark_comment_link(soup:BeautifulSoup) -> str:
+    """
+    Parses the fark website soup to return the url of the first comment thread
+    :param soup: Fark website converted to BS4 soup
+    :return: URL of the first comment thread
+    """
+    # Check to see if any results were found
+    comment_threads = soup.findAll("div", {"class": "icon_comment_container"})
+    if len(comment_threads) == 0:
+        return None
+    # Once we know there are results, identify all the links to the comment threads
+    comment_thread_links = [a["href"] for a in soup.select(".icon_comment_container a[href]")]
+    return comment_thread_links[0]
 
 
 def get_fark_response(search_term):
