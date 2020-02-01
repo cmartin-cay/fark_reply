@@ -30,6 +30,19 @@ response_pool = [
     "There is a small chance some will say something funny in the comment thread, and a tiny chance they will say something smart",
     "This isn't a thread about beer, but you can make it into one",
     "Because what self respecting farker actually reads the articles",
+    "The answer is beer, and talking about beer. Ok maybe whiskey as well",
+    "Fark threads are definitely better than twitter threads",
+    "You know that urge to step away from the keyboard, ignore it",
+    "Click the link. Read the comments. Add your own",
+    "Surely nobody could have a problem with this....right",
+    "If whiskey is the water of life, then surely... well Fark is alright too I guess",
+    "If you were promised that there would be no math, there probably won't be",
+    "If you're reading this on the toilet, we know who you are, and what you've done",
+    "The longer you wait, the harder it gets",
+    "In every thread in every tab on this site, there is a nobody who dreams of being a somebody. Or at least getting a few funny votes",
+    "Work sucks. But farking at work is awesome",
+    "Feel the rythym, feel the rhyme, get on up, it's commenting time",
+    "You don't get to 500 comments without making a few enemies"
 ]
 
 
