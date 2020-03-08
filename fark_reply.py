@@ -163,7 +163,7 @@ class MyStreamListener(tweepy.StreamListener):
         # If relevant, strip out the http link and return the search string and tweet id
         text = tweet_text(status, text)
         #TODO Identify if tweet is a News Flash and process that in a slightly different way
-        print(text, tweet_id)
+        print(f"Step 2 {text}, {tweet_id}")
         print("____________________________")
         # Step 3: Post the response
         fark_soup = make_fark_soup(text)
