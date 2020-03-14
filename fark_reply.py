@@ -42,7 +42,20 @@ response_pool = [
     "In every thread in every tab on this site, there is a nobody who dreams of being a somebody. Or at least getting a few funny votes",
     "Work sucks. But farking at work is awesome",
     "Feel the rythym, feel the rhyme, get on up, it's commenting time",
-    "You don't get to 500 comments without making a few enemies"
+    "You don't get to 500 comments without making a few enemies",
+    "Fark. Where we've been practicing social distancing since before it was popular",
+    "This funny comment thread removed for trolling",
+    "Because why should facebook and twitter have all the fun",
+    "The only thing better than washing your hands",
+    "This comment thread is gold. I was coded to tell the truth. Honest",
+    "I take no responsibility for anything in the comment thread",
+    "Is it too early to be drunk and farking?",
+    "What we've got here in the comments is a failure to communicate",
+    "There's no place like the comment thread",
+    "Elementary my dear Farker",
+    "There's no crying in the comment thread",
+    "Proper comment threading? Where we're going, we don't need proper comment threading",
+    "Wisdom, Justice, and Moderation. Not just the state motto of Georgia anymore"
 ]
 
 
