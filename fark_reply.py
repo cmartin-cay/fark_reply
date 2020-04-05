@@ -8,7 +8,6 @@ import os
 from urllib3.exceptions import ProtocolError
 import time
 
-
 load_dotenv()
 CONSUMER_KEY = os.getenv("CONSUMER_KEY")
 CONSUMER_SECRET = os.getenv("CONSUMER_SECRET")
@@ -25,7 +24,7 @@ response_pool = [
     "Tell us what you really think in the comment thread",
     "Here comes the science. And the denial",
     #  "Florida Man",
-    "Let's see what the mods will let us say in the comment thread",
+    # "Let's see what the mods will let us say in the comment thread",
     "Click here for deeply held beliefs",
     "There is a small chance some will say something funny in the comment thread, and a tiny chance they will say something smart",
     "This isn't a thread about beer, but you can make it into one",
@@ -59,14 +58,13 @@ response_pool = [
 ]
 
 
-def create_payload(search_term: str) ->dict:
+def create_payload(search_term: str) -> dict:
     """
     Creates a payload item for use in a reauest object
     :param search_term: A string generated from a twitter status
     :return: A dictionary formatted for the Fark search tool
     """
     return {"qq": search_term, "o": 0}
-
 
 
 def get_relevancy_score(soup: BeautifulSoup) -> int:
@@ -101,7 +99,8 @@ def make_fark_soup(search_term: str) -> BeautifulSoup:
     soup = BeautifulSoup(r.text, features="html.parser")
     return soup
 
-def get_fark_comment_link(soup:BeautifulSoup) -> str:
+
+def get_fark_comment_link(soup: BeautifulSoup) -> str:
     """
     Parses the fark website soup to return the url of the first comment thread
     :param soup: Fark website converted to BS4 soup
@@ -175,7 +174,11 @@ class MyStreamListener(tweepy.StreamListener):
         # Step 2: Identify if it is a relevant tweet
         # If relevant, strip out the http link and return the search string and tweet id
         text = tweet_text(status, text)
-        #TODO Identify if tweet is a News Flash and process that in a slightly different way
+        # TODO Identify if tweet is a News Flash and process that in a slightly different way
+
+        # If the tweet isn't relevant, just stop right here
+        if not text:
+            return
         print(f"Step 2 {text}, {tweet_id}")
         print("____________________________")
         # Step 3: Post the response
