@@ -73,10 +73,10 @@ def get_relevancy_score(soup: BeautifulSoup) -> int:
     :param soup: Fark website converted to BS4 soup
     :return: A relevancy score
     """
-    revelancy = soup.find("span", attrs={"style": {"font-size:smaller"}})
+    relevency = soup.find("span", attrs={"style": {"font-size:smaller"}})
     # returns "(score xxx%)"
     # so slice the string to just get the % then convert to int
-    return int(revelancy.text[7:-2])
+    return int(relevency.text[7:-2])
 
 
 def create_tweet_reply(soup: BeautifulSoup) -> str:
@@ -123,7 +123,7 @@ def get_fark_response(search_term):
     mydivs = soup.findAll("div", {"class": "icon_comment_container"})
     if len(mydivs) == 0:
         return None
-    if get_relevant(soup) < 75:
+    if get_relevancy_score(soup) < 75:
         print(f"Relevancy score: <75%")
         return None
     fark_tag = [a["title"] for a in soup.select(".headlineTopic a")]
@@ -221,7 +221,8 @@ if __name__ == "__main__":
     #         myStream.filter(follow=[fark_user_id], is_async=True)
     #     except ProtocolError:
     #         continue
-    try:
-        myStream.filter(follow=[fark_user_id], is_async=True)
-    except Exception as e:
-        pass
+    while True:
+        try:
+            myStream.filter(follow=[fark_user_id])
+        except ProtocolError as e:
+            continue
