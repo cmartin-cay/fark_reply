@@ -6,6 +6,8 @@ import random
 from dotenv import load_dotenv
 import os
 from urllib3.exceptions import ProtocolError
+from urllib.parse import urlparse
+from typing import Union
 import time
 
 load_dotenv()
@@ -54,8 +56,12 @@ response_pool = [
     "Elementary my dear Farker",
     "There's no crying in the comment thread",
     "Proper comment threading? Where we're going, we don't need proper comment threading",
-    "Wisdom, Justice, and Moderation. Not just the state motto of Georgia anymore"
+    "Wisdom, Justice, and Moderation. Not just the state motto of Georgia anymore",
 ]
+
+
+def unshortern_url(shortened_url: str) -> str:
+    pass
 
 
 def create_payload(search_term: str) -> dict:
@@ -111,7 +117,9 @@ def get_fark_comment_link(soup: BeautifulSoup) -> str:
     if len(comment_threads) == 0:
         return None
     # Once we know there are results, identify all the links to the comment threads
-    comment_thread_links = [a["href"] for a in soup.select(".icon_comment_container a[href]")]
+    comment_thread_links = [
+        a["href"] for a in soup.select(".icon_comment_container a[href]")
+    ]
     return comment_thread_links[0]
 
 
@@ -149,9 +157,9 @@ def tweet_text(status, text):
     :return: None or Cleaned text suitable for passing to the Fark search page
     """
     if (
-            status.in_reply_to_status_id
-            or text.startswith("RT @")
-            or hasattr(status, "quoted_status")
+        status.in_reply_to_status_id
+        or text.startswith("RT @")
+        or hasattr(status, "quoted_status")
     ):
         print(text)
         print("Probably a reply or a retweet")
@@ -163,36 +171,41 @@ def tweet_text(status, text):
     return text
 
 
+def valid_tweet(status):
+    if (
+        status.in_reply_to_status_id
+        or status.text.startswith("RT @")
+        or hasattr(status, "quoted_status")
+    ):
+        return True
+
+
+def get_fark_link(url: str) -> Union[str, bool]:
+    link = urlparse(url)
+    # If the URL points to fark, it is probably a direct link to fark.com/go style
+    # and we can take the last 8 digits to get the comment thread link
+    if "fark" in link.netloc:
+        return f"www.fark.com/comments/{url[-8:]}"
+    return False
+
+
 class MyStreamListener(tweepy.StreamListener):
     def on_status(self, status):
         tweet_id = status.id
-        # Step 1: Get the text of the tweet - either normal or extended
-        if "extended_tweet" in status._json:
-            text = status.extended_tweet["full_text"]
+        # Step 1: Identify if a tweet is a fark link or not
+        if valid_tweet(status):
+            url = status.entities["urls"][0]["expanded_url"]
+            fark_url = get_fark_link(url)
         else:
-            text = status.text
-        # Step 2: Identify if it is a relevant tweet
-        # If relevant, strip out the http link and return the search string and tweet id
-        text = tweet_text(status, text)
-        # TODO Identify if tweet is a News Flash and process that in a slightly different way
-
-        # If the tweet isn't relevant, just stop right here
-        if not text:
             return
-        print(f"Step 2 {text}, {tweet_id}")
+
+        # Step 2: Post the response
+        fark_response = random.choice(response_pool)
+        fark_response = f"@fark {fark_response} {fark_url}"
+        print(fark_response)
+        api.update_status(status=fark_response, in_reply_to_status_id=tweet_id)
+        print("Response posted")
         print("____________________________")
-        # Step 3: Post the response
-        fark_soup = make_fark_soup(text)
-        if fark_soup:
-            fark_url = get_fark_comment_link(fark_soup)
-            relevancy_score = get_relevancy_score(fark_soup)
-            if fark_url and relevancy_score > 75:
-                fark_response = create_tweet_reply(fark_soup)
-                fark_response = f"@fark {fark_response} {fark_url}"
-                print(fark_response)
-                api.update_status(status=fark_response, in_reply_to_status_id=tweet_id)
-                print("Response posted")
-                print("____________________________")
 
     def on_disconnect(self, notice):
         print(f"Disconnect by {notice}")
@@ -216,13 +229,12 @@ if __name__ == "__main__":
     myStream = tweepy.Stream(
         auth=api.auth, listener=myStreamListener, tweet_mode="extended"
     )
+    try:
+        myStream.filter(follow=[fark_user_id], is_async=True)
+    except ProtocolError:
+        pass
     # while True:
     #     try:
-    #         myStream.filter(follow=[fark_user_id], is_async=True)
-    #     except ProtocolError:
+    #         myStream.filter(follow=[fark_user_id])
+    #     except ProtocolError as e:
     #         continue
-    while True:
-        try:
-            myStream.filter(follow=[fark_user_id])
-        except ProtocolError as e:
-            continue
