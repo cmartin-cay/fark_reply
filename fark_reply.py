@@ -206,7 +206,7 @@ class MyStreamListener(tweepy.StreamListener):
         else:
             return
 
-        Step 2: Post the response
+        # Step 2: Post the response
         fark_response = random.choice(response_pool)
         fark_response = f"@fark {fark_response} {fark_url}"
         print(fark_response)
