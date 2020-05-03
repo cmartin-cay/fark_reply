@@ -12,6 +12,7 @@ bs4 = "*"
 requests = "*"
 tweepy = "*"
 python-dotenv = "*"
+jupyterlab = "*"
 
 [requires]
 python_version = "3.8"
