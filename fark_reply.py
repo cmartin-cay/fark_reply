@@ -17,6 +17,7 @@ ACCESS_TOKEN = os.getenv("ACCESS_TOKEN")
 ACCESS_SECRET = os.getenv("ACCESS_SECRET")
 search_url = "https://www.fark.com/hlsearch"
 fark_user_id = "14804898"
+vulgar_user_id = "740888554008543232"
 response_pool = [
     "Come argue with farkers in the comment thread",
     "Never leave your basement again with the help of comment thread",
@@ -177,6 +178,8 @@ def valid_tweet(status):
         or status.text.startswith("RT @")
         or hasattr(status, "quoted_status")
     ):
+        return False
+    else:
         return True
 
 
@@ -194,12 +197,16 @@ class MyStreamListener(tweepy.StreamListener):
         tweet_id = status.id
         # Step 1: Identify if a tweet is a fark link or not
         if valid_tweet(status):
-            url = status.entities["urls"][0]["expanded_url"]
+            if "extended_tweet" in status._json:
+                url = status.extended_tweet['entities']['urls'][0]['expanded_url']
+            else:
+                url = status.entities["urls"][0]["expanded_url"]
+            print(url)
             fark_url = get_fark_link(url)
         else:
             return
 
-        # Step 2: Post the response
+        Step 2: Post the response
         fark_response = random.choice(response_pool)
         fark_response = f"@fark {fark_response} {fark_url}"
         print(fark_response)
