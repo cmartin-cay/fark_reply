@@ -149,7 +149,7 @@ class MyStreamListener(tweepy.StreamListener):
             return
 
         # Step 2: Post the response
-        soup = make_fark_soup(url)
+        soup = make_fark_soup(fark_url)
         fark_response = create_tweet_reply(soup)
         fark_response = f"@fark {fark_response} {fark_url}"
         print(fark_response)
