@@ -1,14 +1,12 @@
 import requests
 from bs4 import BeautifulSoup
 import tweepy
-import re
 import random
 from dotenv import load_dotenv
 import os
 from urllib3.exceptions import ProtocolError
 from urllib.parse import urlparse
 from typing import Union
-import time
 
 load_dotenv()
 CONSUMER_KEY = os.getenv("CONSUMER_KEY")
@@ -62,6 +60,11 @@ response_pool = [
 
 
 def create_tweet_reply(soup: BeautifulSoup) -> str:
+    """
+    Take the parsed soup of the comment thread. Identify the tag. Return a text response
+    :param soup: Soup of the fark comment thread
+    :return: Either a random selection, or a special response for Florida or NewsFlash
+    """
     fark_tag = [a["title"] for a in soup.select(".commentHeadlineContainerTopic a")]
     if fark_tag[0] == "Florida":
         return "Florida Man thread"
@@ -73,10 +76,10 @@ def create_tweet_reply(soup: BeautifulSoup) -> str:
 
 def make_fark_soup(fark_url: str) -> BeautifulSoup:
     """
+    Convert the html of the comment thread into a parsed soup output
     :param fark_url: The url to the comments thread
     :return: BeautifulSoup object of the page returned by the Fark search engine
     """
-
     r = requests.get(fark_url)
     soup = BeautifulSoup(r.text, features="html.parser")
     return soup
@@ -98,6 +101,12 @@ def authorize_tweepy(consumer_key, consumer_secret, access_token, access_secret)
 
 
 def valid_tweet(status):
+    """
+    Identify if a tweet is posting a link or responding to someone/retweeting/quoting
+    A response or retweet or quote will return a False
+    :param status: Tweet object
+    :return: Boolean
+    """
     if (
             status.in_reply_to_status_id
             or status.text.startswith("RT @")
@@ -123,11 +132,18 @@ class MyStreamListener(tweepy.StreamListener):
         # Step 1: Identify if a tweet is a fark link or not
         if valid_tweet(status):
             # TODO IndexError list index out of range
+            # TODO This error happens when a tweet is made without a link. This is often a ModEmail tweet
+            # TODO Wrap the if/else in a Try block
+            """
+            As a remnant from Twitter increasing the tweet length limit, tweets are either extended or original
+            The full length urls are stored in different locations for extended/original
+            """
             if "extended_tweet" in status._json:
                 url = status.extended_tweet["entities"]["urls"][0]["expanded_url"]
             else:
                 url = status.entities["urls"][0]["expanded_url"]
             print(url)
+            "Convert the fark.com/go link to a link to the comments thread"
             fark_url = get_fark_link(url)
         else:
             return
