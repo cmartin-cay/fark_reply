@@ -59,32 +59,6 @@ response_pool = [
 ]
 
 
-def create_tweet_reply(soup: BeautifulSoup) -> str:
-    """
-    Take the parsed soup of the comment thread. Identify the tag. Return a text response
-    :param soup: Soup of the fark comment thread
-    :return: Either a random selection, or a special response for Florida or NewsFlash
-    """
-    fark_tag = [a["title"] for a in soup.select(".commentHeadlineContainerTopic a")]
-    if fark_tag[0] == "Florida":
-        return "Florida Man thread"
-    elif fark_tag[0] == "NewsFlash":
-        return "This is a NewsFlash. Please be mindful of that in the thread"
-    else:
-        return random.choice(response_pool)
-
-
-def make_fark_soup(fark_url: str) -> BeautifulSoup:
-    """
-    Convert the html of the comment thread into a parsed soup output
-    :param fark_url: The url to the comments thread
-    :return: BeautifulSoup object of the page returned by the Fark search engine
-    """
-    r = requests.get(fark_url)
-    soup = BeautifulSoup(r.text, features="html.parser")
-    return soup
-
-
 def authorize_tweepy(consumer_key, consumer_secret, access_token, access_secret):
     """
     Sign in to Twitter and gain access to the API
@@ -108,9 +82,9 @@ def valid_tweet(status):
     :return: Boolean
     """
     if (
-            status.in_reply_to_status_id
-            or status.text.startswith("RT @")
-            or hasattr(status, "quoted_status")
+        status.in_reply_to_status_id
+        or status.text.startswith("RT @")
+        or hasattr(status, "quoted_status")
     ):
         return False
     else:
@@ -124,6 +98,32 @@ def get_fark_link(url: str) -> Union[str, bool]:
     if "fark" in link.netloc:
         return f"www.fark.com/comments/{url[-8:]}"
     return False
+
+
+def make_fark_soup(fark_url: str) -> BeautifulSoup:
+    """
+    Convert the html of the comment thread into a parsed soup output
+    :param fark_url: The url to the comments thread
+    :return: BeautifulSoup object of the page returned by the Fark search engine
+    """
+    r = requests.get(fark_url)
+    soup = BeautifulSoup(r.text, features="html.parser")
+    return soup
+
+
+def create_tweet_reply(soup: BeautifulSoup) -> str:
+    """
+    Take the parsed soup of the comment thread. Identify the tag. Return a text response
+    :param soup: Soup of the fark comment thread
+    :return: Either a random selection, or a special response for Florida or NewsFlash
+    """
+    fark_tag = [a["title"] for a in soup.select(".commentHeadlineContainerTopic a")]
+    if fark_tag[0] == "Florida":
+        return "Florida Man thread"
+    elif fark_tag[0] == "NewsFlash":
+        return "This is a NewsFlash. Please be mindful of that in the thread"
+    else:
+        return random.choice(response_pool)
 
 
 class MyStreamListener(tweepy.StreamListener):
