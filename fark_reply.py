@@ -96,7 +96,7 @@ def get_fark_link(url: str) -> Union[str, bool]:
     # If the URL points to fark, it is probably a direct link to fark.com/go style
     # and we can take the last 8 digits to get the comment thread link
     if "fark" in link.netloc:
-        return f"www.fark.com/comments/{url[-8:]}"
+        return f"http://www.fark.com/comments/{url[-8:]}"
     return False
 
 
@@ -142,14 +142,13 @@ class MyStreamListener(tweepy.StreamListener):
                 url = status.extended_tweet["entities"]["urls"][0]["expanded_url"]
             else:
                 url = status.entities["urls"][0]["expanded_url"]
-            print(url)
-            "Convert the fark.com/go link to a link to the comments thread"
+            # "Convert the fark.com/go link to a link to the comments thread"
             fark_url = get_fark_link(url)
         else:
             return
 
         # Step 2: Post the response
-        soup = make_fark_soup(f"http://www.fark.com/comments/{fark_url}")
+        soup = make_fark_soup(fark_url)
         fark_response = create_tweet_reply(soup)
         fark_response = f"@fark {fark_response} {fark_url}"
         print(fark_response)
@@ -180,7 +179,7 @@ if __name__ == "__main__":
         auth=api.auth, listener=myStreamListener, tweet_mode="extended"
     )
     try:
-        myStream.filter(follow=[fark_user_id], is_async=True)
+        myStream.filter(follow=[vulgar_user_id], is_async=True)
     except ProtocolError:
         pass
     # while True:
