@@ -179,7 +179,7 @@ if __name__ == "__main__":
         auth=api.auth, listener=myStreamListener, tweet_mode="extended"
     )
     try:
-        myStream.filter(follow=[vulgar_user_id], is_async=True)
+        myStream.filter(follow=[fark_user_id], is_async=True)
     except ProtocolError:
         pass
     # while True:
