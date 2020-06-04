@@ -178,12 +178,12 @@ if __name__ == "__main__":
     myStream = tweepy.Stream(
         auth=api.auth, listener=myStreamListener, tweet_mode="extended"
     )
-    try:
-        myStream.filter(follow=[fark_user_id], is_async=True)
-    except ProtocolError:
-        pass
-    # while True:
-    #     try:
-    #         myStream.filter(follow=[fark_user_id])
-    #     except ProtocolError as e:
-    #         continue
+    # try:
+    #     myStream.filter(follow=[fark_user_id], is_async=True)
+    # except ProtocolError:
+    #     pass
+    while True:
+        try:
+            myStream.filter(follow=[fark_user_id])
+        except ProtocolError as e:
+            continue
