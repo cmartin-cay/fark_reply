@@ -7,6 +7,10 @@ import os
 from urllib3.exceptions import ProtocolError
 from urllib.parse import urlparse
 from typing import Union
+from redis import Redis
+from rq import Queue
+
+q = Queue(connection=Redis())
 
 load_dotenv()
 CONSUMER_KEY = os.getenv("CONSUMER_KEY")
@@ -56,6 +60,8 @@ response_pool = [
     "There's no crying in the comment thread",
     "Proper comment threading? Where we're going, we don't need proper comment threading",
     "Wisdom, Justice, and Moderation. Not just the state motto of Georgia anymore",
+    "To the fark bunker. Quickly. For safety",
+    "Squirrel"
 ]
 
 
@@ -86,8 +92,10 @@ def valid_tweet(status):
         or status.text.startswith("RT @")
         or hasattr(status, "quoted_status")
     ):
+        print("False")
         return False
     else:
+        print("True")
         return True
 
 
@@ -126,35 +134,44 @@ def create_tweet_reply(soup: BeautifulSoup) -> str:
         return random.choice(response_pool)
 
 
-class MyStreamListener(tweepy.StreamListener):
-    def on_status(self, status):
-        tweet_id = status.id
-        # Step 1: Identify if a tweet is a fark link or not
-        if valid_tweet(status):
-            # TODO IndexError list index out of range
-            # TODO This error happens when a tweet is made without a link. This is often a ModEmail tweet
-            # TODO Wrap the if/else in a Try block
-            """
-            As a remnant from Twitter increasing the tweet length limit, tweets are either extended or original
-            The full length urls are stored in different locations for extended/original
-            """
-            if "extended_tweet" in status._json:
-                url = status.extended_tweet["entities"]["urls"][0]["expanded_url"]
-            else:
-                url = status.entities["urls"][0]["expanded_url"]
-            # "Convert the fark.com/go link to a link to the comments thread"
-            fark_url = get_fark_link(url)
-        else:
-            return
 
-        # Step 2: Post the response
-        soup = make_fark_soup(fark_url)
-        fark_response = create_tweet_reply(soup)
-        fark_response = f"@fark {fark_response} {fark_url}"
-        print(fark_response)
-        api.update_status(status=fark_response, in_reply_to_status_id=tweet_id)
-        print("Response posted")
-        print("____________________________")
+
+class MyStreamListener(tweepy.StreamListener):
+
+
+
+    def on_status(self, status):
+        # tweet_id = status.id
+        # # Step 1: Identify if a tweet is a fark link or not
+        # if valid_tweet(status):
+        #     # TODO IndexError list index out of range
+        #     # TODO This error happens when a tweet is made without a link. This is often a ModEmail tweet
+        #     # TODO Wrap the if/else in a Try block
+        #     """
+        #     As a remnant from Twitter increasing the tweet length limit, tweets are either extended or original
+        #     The full length urls are stored in different locations for extended/original
+        #     """
+        #     if "extended_tweet" in status._json:
+        #         url = status.extended_tweet["entities"]["urls"][0]["expanded_url"]
+        #     else:
+        #         url = status.entities["urls"][0]["expanded_url"]
+        #     # "Convert the fark.com/go link to a link to the comments thread"
+        #     fark_url = get_fark_link(url)
+        # else:
+        #     return
+        #
+        # # Step 2: Post the response
+        # soup = make_fark_soup(fark_url)
+        # fark_response = create_tweet_reply(soup)
+        # fark_response = f"@fark {fark_response} {fark_url}"
+        # print(fark_response)
+        # api.update_status(status=fark_response, in_reply_to_status_id=tweet_id)
+        # print("Response posted")
+        # print("____________________________")
+
+
+
+        return status
 
     def on_disconnect(self, notice):
         print(f"Disconnect by {notice}")
@@ -171,6 +188,16 @@ class MyStreamListener(tweepy.StreamListener):
     def on_connect(self):
         print("Connected to the Stream")
 
+def connect_to_twitter():
+    api = authorize_tweepy(CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN, ACCESS_SECRET)
+    myStreamListener = MyStreamListener()
+    myStream = tweepy.Stream(
+        auth=api.auth, listener=myStreamListener, tweet_mode="extended"
+    )
+    myStream.filter(follow=[vulgar_user_id], is_async=True)
+
+def print_tweet(tweet):
+    print(tweet)
 
 if __name__ == "__main__":
     api = authorize_tweepy(CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN, ACCESS_SECRET)
@@ -178,12 +205,9 @@ if __name__ == "__main__":
     myStream = tweepy.Stream(
         auth=api.auth, listener=myStreamListener, tweet_mode="extended"
     )
-    # try:
-    #     myStream.filter(follow=[fark_user_id], is_async=True)
-    # except ProtocolError:
-    #     pass
-    while True:
-        try:
-            myStream.filter(follow=[fark_user_id])
-        except ProtocolError as e:
-            continue
+    myStream.filter(follow=[vulgar_user_id], is_async=True)
+    # while True:
+    #     try:
+    #         myStream.filter(follow=[vulgar_user_id])
+    #     except ProtocolError as e:
+    #         continue
