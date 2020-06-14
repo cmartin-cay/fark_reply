@@ -56,6 +56,8 @@ response_pool = [
     "There's no crying in the comment thread",
     "Proper comment threading? Where we're going, we don't need proper comment threading",
     "Wisdom, Justice, and Moderation. Not just the state motto of Georgia anymore",
+    "To the fark bunker. We will be safe there",
+    "Squirrel. Fark",
 ]
 
 
