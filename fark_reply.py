@@ -140,10 +140,13 @@ class MyStreamListener(tweepy.StreamListener):
             As a remnant from Twitter increasing the tweet length limit, tweets are either extended or original
             The full length urls are stored in different locations for extended/original
             """
-            if "extended_tweet" in status._json:
-                url = status.extended_tweet["entities"]["urls"][0]["expanded_url"]
-            else:
-                url = status.entities["urls"][0]["expanded_url"]
+            try:
+                if "extended_tweet" in status._json:
+                    url = status.extended_tweet["entities"]["urls"][0]["expanded_url"]
+                else:
+                    url = status.entities["urls"][0]["expanded_url"]
+            except IndexError:
+                return
             # "Convert the fark.com/go link to a link to the comments thread"
             fark_url = get_fark_link(url)
         else:
