@@ -58,6 +58,7 @@ response_pool = [
     "Wisdom, Justice, and Moderation. Not just the state motto of Georgia anymore",
     "To the fark bunker. We will be safe there",
     "Squirrel. Fark",
+    "A collection of bad comments marinated in alcohol",
 ]
 
 
