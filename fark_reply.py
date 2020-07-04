@@ -44,7 +44,7 @@ response_pool = [
     # "Feel the rythym, feel the rhyme, get on up, it's commenting time",
     "You don't get to 500 comments without making a few enemies",
     "Fark. Where we've been practicing social distancing since before it was popular",
-    "This funny comment thread removed for trolling",
+    # "This funny comment thread removed for trolling",
     "Because why should facebook and twitter have all the fun",
     "The only thing better than washing your hands",
     "This comment thread is gold. I was coded to tell the truth. Honest",
@@ -58,7 +58,7 @@ response_pool = [
     "Wisdom, Justice, and Moderation. Not just the state motto of Georgia anymore",
     "To the fark bunker. We will be safe there",
     "Squirrel. Fark",
-    "A collection of bad comments marinated in alcohol",
+    "A collection of brilliant comments marinated in alcohol",
 ]
 
 
