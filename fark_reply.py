@@ -98,7 +98,7 @@ def get_fark_link(url: str) -> Union[str, bool]:
     link = urlparse(url)
     # If the URL points to fark, it is probably a direct link to fark.com/go style
     # and we can take the last 8 digits to get the comment thread link
-    if "fark" in link.netloc:
+    if "fark" in link.netloc and "go" in link.path:
         return f"http://www.fark.com/comments/{url[-8:]}"
     return False
 
@@ -134,9 +134,6 @@ class MyStreamListener(tweepy.StreamListener):
         tweet_id = status.id
         # Step 1: Identify if a tweet is a fark link or not
         if valid_tweet(status):
-            # TODO IndexError list index out of range
-            # TODO This error happens when a tweet is made without a link. This is often a ModEmail tweet
-            # TODO Wrap the if/else in a Try block
             """
             As a remnant from Twitter increasing the tweet length limit, tweets are either extended or original
             The full length urls are stored in different locations for extended/original
@@ -150,10 +147,14 @@ class MyStreamListener(tweepy.StreamListener):
                 return
             # "Convert the fark.com/go link to a link to the comments thread"
             fark_url = get_fark_link(url)
+            # Sometimes the fark_url will be False. If it is false, we want to stop
+            if not fark_url:
+                return
         else:
             return
 
         # Step 2: Post the response
+        print(status.text)
         soup = make_fark_soup(fark_url)
         fark_response = create_tweet_reply(soup)
         fark_response = f"@fark {fark_response} {fark_url}"
